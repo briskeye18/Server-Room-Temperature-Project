@@ -1,0 +1,84 @@
+#include <ESP8266WiFi.h>
+const char* SSID_NAME = "DCHS-Guest"; 
+const char* SSID_PASS = "Thereisn0Try"; 
+const char* TOKEN = "A1E-ytVEkT7ujRW0eYBatB5VIuLlwsNqgd"; 
+const char* DEVICE_LABEL = "temperature-sensor";
+const char* VARIABLE_LABEL = "temperature"; 
+const char* USER_AGENT = "ESP8266";
+const char* VERSION = "1.0";
+const char* HTTPSERVER = "things.ubidots.com";
+int HTTPPORT = 80;
+WiFiClient clientUbi;
+int dataLen(char* variable) {
+  uint8_t dataLen = 0;
+  for (int i = 0; i <= 250; i++) {
+    if (variable[i] != '\0') {
+      dataLen++;
+    } else {
+      break;
+    }
+  }
+  return dataLen;
+}
+void setup() {
+  Serial.begin(115200);
+    int n = WiFi.scanNetworks();
+  Serial.print(n);
+  Serial.println(" network(s) found");
+  for (int i = 0; i < n; i++)
+  {
+    Serial.println(WiFi.SSID(i));
+  }
+    WiFi.begin(SSID_NAME, SSID_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    }
+
+  WiFi.setAutoReconnect(true);
+  Serial.println(F("WiFi connected"));
+  Serial.println(F("IP address: "));
+  Serial.println(WiFi.localIP());
+
+}
+
+void loop() {
+
+  char* body = (char *) malloc(sizeof(char) * 150);
+  char* data = (char *) malloc(sizeof(char) * 300);
+  char str_val[10];
+  float sensor_value = analogRead(A0);
+  float voltage = sensor_value;
+ Serial.print(voltage); Serial.println(" volts");
+ float temperatureC = (voltage - 500)/10 ;
+ temperatureC= temperatureC-4;
+ Serial.print(temperatureC); Serial.println(" degrees C"); 
+ sensor_value = (temperatureC * 9.0 / 5.0) + 32.0;
+ Serial.print(sensor_value); Serial.println(" degrees F");
+  dtostrf(sensor_value, 4, 2, str_val);
+  sprintf(body, "{\"%s\":%s}", VARIABLE_LABEL, str_val);
+  sprintf(data, "POST /api/v1.6/devices/%s", DEVICE_LABEL);
+  sprintf(data, "%s HTTP/1.1\r\n", data);
+  sprintf(data, "%sHost: things.ubidots.com\r\n", data);
+  sprintf(data, "%sUser-Agent: %s/%s\r\n", data, USER_AGENT, VERSION);
+  sprintf(data, "%sX-Auth-Token: %s\r\n", data, TOKEN);
+  sprintf(data, "%sConnection: close\r\n", data);
+  sprintf(data, "%sContent-Type: application/json\r\n", data);
+  sprintf(data, "%sContent-Length: %d\r\n\r\n", data, dataLen(body));
+  sprintf(data, "%s%s\r\n\r\n", data, body);
+  clientUbi.connect(HTTPSERVER, HTTPPORT);
+  if (clientUbi.connect(HTTPSERVER, HTTPPORT)) {
+        Serial.println(F("Posting your variables: "));
+        Serial.println(data);
+        clientUbi.print(data);
+  }
+  while (clientUbi.available()) {
+        char c = clientUbi.read();
+        
+        Serial.write(c);
+  }
+  free(data);
+  free(body);
+  clientUbi.stop();
+  delay(600000);
+} 
