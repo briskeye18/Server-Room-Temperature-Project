@@ -1,9 +1,9 @@
 #include <ESP8266WiFi.h>
-const char* SSID_NAME = "DCHS-Guest"; 
-const char* SSID_PASS = "Thereisn0Try"; 
-const char* TOKEN = "A1E-ytVEkT7ujRW0eYBatB5VIuLlwsNqgd"; 
-const char* DEVICE_LABEL = "temperature-sensor";
-const char* VARIABLE_LABEL = "temperature"; 
+const char* SSID_NAME = "Wifi Name Here"; 
+const char* SSID_PASS = "Wifi Password Here"; 
+const char* TOKEN = "Under profile there is an api key"; 
+const char* DEVICE_LABEL = "Name of the device on ubidots";
+const char* VARIABLE_LABEL = "name of the variable you want to edit in ubidots"; 
 const char* USER_AGENT = "ESP8266";
 const char* VERSION = "1.0";
 const char* HTTPSERVER = "things.ubidots.com";
